@@ -29,11 +29,34 @@ public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		removeAddress();
+		removeAddressById(2L);
+		// removeAddress();
 		// oneToManyFindById(2L);
 		// oneToMany();
 		// manyToOneFindByIdClient(1L);
 		// manyToOne();
+	}
+
+	@Transactional
+	public void removeAddressById(Long id) {
+		Optional<Client> optionalClient = clientRepository.findById(id);
+		optionalClient.ifPresentOrElse(client -> {
+			Address address1 = new Address("El verjel", 1234);
+			Address address2 = new Address("Vasco de Gama", 4892);
+
+			client.setAddresses(Arrays.asList(address1, address2));
+
+			System.out.println(clientRepository.save(client));
+
+			Optional<Client> optionalClient2 = clientRepository.findOne(2L);
+			optionalClient2.ifPresent(c -> {
+				Address addressToRemove = c.getAddresses().get(1);
+				c.getAddresses().remove(addressToRemove);
+				clientRepository.save(c);
+				System.out.println("address deleted: " + addressToRemove);
+			});
+
+		}, () -> System.out.println("Client not found by id " + id));
 	}
 
 	@Transactional
@@ -48,11 +71,11 @@ public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
 		clientRepository.save(client);
 		System.out.println(client);
 
-		Optional<Client> optionalClient = clientRepository.findById(4L);
+		Optional<Client> optionalClient = clientRepository.findOne(4L);
 		optionalClient.ifPresent(c -> {
 			c.getAddresses().remove(address1);
 			clientRepository.save(c);
-			System.out.println("client e: " + c);
+			System.out.println("client: " + c);
 		});
 	}
 
