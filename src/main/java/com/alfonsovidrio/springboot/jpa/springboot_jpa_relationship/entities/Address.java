@@ -25,8 +25,6 @@ public class Address {
         this.number = number;
     }
 
-    
-
     public Long getId() {
         return id;
     }
@@ -80,8 +78,4 @@ public class Address {
             return false;
         return true;
     }
-
-    
-    
-
 }
