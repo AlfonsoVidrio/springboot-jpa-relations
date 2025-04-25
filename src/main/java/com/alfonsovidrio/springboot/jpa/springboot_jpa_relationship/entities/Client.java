@@ -5,12 +5,14 @@ import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -33,10 +35,12 @@ public class Client {
         inverseJoinColumns = @JoinColumn(name = "id_addresses"),
         uniqueConstraints = @UniqueConstraint(columnNames = {"id_addresses", "id_client"}))    
     private Set<Address> addresses;
-    
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "client")
     private Set<Invoice> invoices;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "client")
+    private ClientDetails clientDetails;
 
     public Client() {
         addresses = new HashSet<>();
@@ -52,15 +56,30 @@ public class Client {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public ClientDetails getClientDetails() {
+        return clientDetails;
+    }
+
+    public void setClientDetails(ClientDetails clientDetails) {
+        this.clientDetails = clientDetails;
+    }
+
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public String getLastname() {
         return lastname;
     }
+
     public void setLastname(String lastname) {
         this.lastname = lastname;
     }
@@ -94,6 +113,17 @@ public class Client {
         return this;
     }
 
+    public Client addClientDetails(ClientDetails clientDetails) {
+        this.clientDetails = clientDetails;
+        clientDetails.setClient(this);
+        return this;
+    }
+
+    public void removeClientDetails(ClientDetails clientDetails) {
+        clientDetails.setClient(null);
+        this.clientDetails = null;
+    }
+
     @Override
     public String toString() {
         return "{ id=" + id +
@@ -101,6 +131,7 @@ public class Client {
         ", lastname=" + lastname +
         ", invoices=" + invoices +
         "addresses=" + addresses +
+        "clientDetails=" + clientDetails +
         " }";
     }
 }
