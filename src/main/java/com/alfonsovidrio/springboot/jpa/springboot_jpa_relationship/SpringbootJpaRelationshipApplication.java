@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.Address;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.Client;
+import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.ClientDetails;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.Invoice;
+import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.repositories.ClientDetailsRepository;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.repositories.ClientRepository;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.repositories.InvoiceRepository;
 
@@ -23,6 +25,8 @@ public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
 	private ClientRepository clientRepository;
 	@Autowired
 	private InvoiceRepository invoiceRepository;
+	@Autowired
+	private ClientDetailsRepository clientDetailsRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringbootJpaRelationshipApplication.class, args);
@@ -30,7 +34,11 @@ public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		removeInvoiceBidirectionalFindById();
+		oneToOneBidirectionalFindById();
+		// oneToOneBidirectional();
+		// oneToOneFindById();
+		// oneToOne();
+		// removeInvoiceBidirectionalFindById();
 		// oneToManyInvoiceBidirectionalFindById();
 		// oneToManyInvoiceBidirectional();
 		// removeAddressById(2L);
@@ -39,6 +47,49 @@ public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
 		// oneToMany();
 		// manyToOneFindByIdClient(1L);
 		// manyToOne();
+	}
+	public void oneToOneBidirectionalFindById() {
+		Optional<Client> optionalClient = clientRepository.findOne(2L);
+		optionalClient.ifPresent(c -> {
+			ClientDetails clientDetails = new ClientDetails(true,500);
+
+			c.setClientDetails(clientDetails);
+	
+			clientRepository.save(c);
+			System.out.println(c);
+		});
+
+	}
+
+	public void oneToOneBidirectional() {
+		Client client = new Client("Luis","Vidrio");
+		ClientDetails clientDetails = new ClientDetails(true,500);
+
+		client.setClientDetails(clientDetails);
+
+		clientRepository.save(client);
+		System.out.println(client);
+	}
+
+	public void oneToOneFindById() {
+		ClientDetails clientDetails = new ClientDetails(true,500);
+		clientDetailsRepository.save(clientDetails);
+
+		Optional<Client> clientOptional = clientRepository.findOne(2L);
+		clientOptional.ifPresent(c -> {
+			c.setClientDetails(clientDetails);
+			clientRepository.save(c);
+			System.out.println(c);
+		});
+	}
+
+	public void oneToOne() {
+		ClientDetails clientDetails = new ClientDetails(true,500);
+		clientDetailsRepository.save(clientDetails);
+
+		Client client = new Client("Luis","Vidrio");
+		client.setClientDetails(clientDetails);
+		clientRepository.save(client);
 	}
 
 	@Transactional
