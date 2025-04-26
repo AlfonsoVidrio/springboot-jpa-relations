@@ -13,10 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.Address;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.Client;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.ClientDetails;
+import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.Course;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.Invoice;
+import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.entities.Student;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.repositories.ClientDetailsRepository;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.repositories.ClientRepository;
+import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.repositories.CourseRepository;
 import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.repositories.InvoiceRepository;
+import com.alfonsovidrio.springboot.jpa.springboot_jpa_relationship.repositories.StudentRepository;
 
 @SpringBootApplication
 public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
@@ -27,6 +31,10 @@ public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
 	private InvoiceRepository invoiceRepository;
 	@Autowired
 	private ClientDetailsRepository clientDetailsRepository;
+	@Autowired
+	private StudentRepository studentRepository;
+	@Autowired
+	private CourseRepository courseRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringbootJpaRelationshipApplication.class, args);
@@ -34,7 +42,14 @@ public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		oneToOneBidirectionalFindById();
+		manyToManyRemoveBidirectionalFind();
+		// manyToManyBidirectionalFind();
+		// manyToManyBidirectionalRemove();
+		// manyToManyBidirectional();
+		// manyToManyRemoveFind();
+		// manyToManyFind();
+		// manyToMany();
+		// oneToOneBidirectionalFindById();
 		// oneToOneBidirectional();
 		// oneToOneFindById();
 		// oneToOne();
@@ -48,6 +63,166 @@ public class SpringbootJpaRelationshipApplication implements CommandLineRunner {
 		// manyToOneFindByIdClient(1L);
 		// manyToOne();
 	}
+
+	@Transactional
+	public void manyToManyRemoveBidirectionalFind() {
+		Student student1 = studentRepository.findOneWithCourses(1L).orElseThrow(() -> new RuntimeException("Student not found"));
+		Student student2 = studentRepository.findOneWithCourses(2L).orElseThrow(() -> new RuntimeException("Student not found"));
+
+		Course course1 = courseRepository.findOneWithStudents(1L).orElseThrow(() -> new RuntimeException("Course not found"));
+		Course course2 = courseRepository.findOneWithStudents(2L).orElseThrow(() -> new RuntimeException("Course not found"));
+
+		// student1.setCourses(Set.of(course1, course2));
+		// student2.setCourses(Set.of(course2));
+
+		student1.addCourse(course1).addCourse(course2);
+		student2.addCourse(course2);
+
+		studentRepository.saveAll(Set.of(student1, student2));
+
+		System.out.println(student1);
+		System.out.println(student2);
+
+		Optional<Student> optionalStudent1 = studentRepository.findOneWithCourses(1L);
+		if (optionalStudent1.isPresent()) {
+			Student student = optionalStudent1.orElseThrow(() -> new RuntimeException("Student not found"));
+			Course courseToRemove = courseRepository.findOneWithStudents(2L).orElseThrow(() -> new RuntimeException("Course not found"));
+			student.removeCourse(courseToRemove);
+			studentRepository.save(student);
+			System.out.println("Course removed from student: " + student);
+		}
+	}
+
+	@Transactional
+	public void manyToManyBidirectionalFind() {
+		Student student1 = studentRepository.findOneWithCourses(1L).orElseThrow(() -> new RuntimeException("Student not found"));
+		Student student2 = studentRepository.findOneWithCourses(2L).orElseThrow(() -> new RuntimeException("Student not found"));
+
+		Course course1 = courseRepository.findOneWithStudents(1L).orElseThrow(() -> new RuntimeException("Course not found"));
+		Course course2 = courseRepository.findOneWithStudents(2L).orElseThrow(() -> new RuntimeException("Course not found"));
+
+		// student1.setCourses(Set.of(course1, course2));
+		// student2.setCourses(Set.of(course2));
+
+		student1.addCourse(course1).addCourse(course2);
+		student2.addCourse(course2);
+
+		studentRepository.saveAll(Set.of(student1, student2));
+
+		System.out.println(student1);
+		System.out.println(student2);
+	}
+
+	@Transactional
+	public void manyToManyBidirectionalRemove() {
+		Student student1 = new Student("Jano", "Pura");
+		Student student2 = new Student("Erba", "Doe");
+
+		Course course1 = new Course("Java Programming", "Andres");
+		Course course2 = new Course("Spring Boot", "Luis");
+
+		student1.setCourses(Set.of(course1, course2));
+		student2.setCourses(Set.of(course2));
+
+		studentRepository.saveAll(Set.of(student1, student2));
+
+		System.out.println(student1);
+		System.out.println(student2);
+		
+		Optional<Student> optionalStudent1 = studentRepository.findOneWithCourses(1L);
+		if (optionalStudent1.isPresent()) {
+			Student student = optionalStudent1.orElseThrow(() -> new RuntimeException("Student not found"));
+			Course courseToRemove = courseRepository.findOneWithStudents(2L).orElseThrow(() -> new RuntimeException("Course not found"));
+			student.removeCourse(courseToRemove);
+			studentRepository.save(student);
+			System.out.println("Course removed from student: " + student);
+		}
+	}
+
+	@Transactional
+	public void manyToManyBidirectional() {
+		Student student1 = new Student("Jano", "Pura");
+		Student student2 = new Student("Erba", "Doe");
+
+		Course course1 = new Course("Java Programming", "Andres");
+		Course course2 = new Course("Spring Boot", "Luis");
+
+		// student1.setCourses(Set.of(course1, course2));
+		// student2.setCourses(Set.of(course2));
+
+		student1.addCourse(course1).addCourse(course2);
+		student2.addCourse(course2);
+
+		studentRepository.saveAll(Set.of(student1, student2));
+
+		System.out.println(student1);
+		System.out.println(student2);
+	}
+	
+	@Transactional
+	public void manyToManyRemoveFind() {
+		Student student1 = studentRepository.findById(1L).orElseThrow(() -> new RuntimeException("Student not found"));
+		Student student2 = studentRepository.findById(2L).orElseThrow(() -> new RuntimeException("Student not found"));
+
+		Course course1 = courseRepository.findById(1L).orElseThrow(() -> new RuntimeException("Course not found"));
+		Course course2 = courseRepository.findById(2L).orElseThrow(() -> new RuntimeException("Course not found"));
+
+		student1.setCourses(Set.of(course1, course2));
+		student2.setCourses(Set.of(course2));
+
+		studentRepository.saveAll(Set.of(student1, student2));
+
+		System.out.println(student1);
+		System.out.println(student2);
+
+		// remove course 2 from student 1
+		Optional<Student> optionalStudent1 = studentRepository.findOneWithCourses(1L);
+		if (optionalStudent1.isPresent()) {
+			Student student = optionalStudent1.orElseThrow(() -> new RuntimeException("Student not found"));	
+			
+			Optional<Course> optionalCourse2 = courseRepository.findById(2L);
+			if (optionalCourse2.isPresent()) {
+				Course course = optionalCourse2.orElseThrow(() -> new RuntimeException("Course not found"));
+				student.getCourses().remove(course);
+				studentRepository.save(student);
+				System.out.println("Course removed from student: " + student);
+			}
+		}
+	}
+
+	@Transactional
+	public void manyToManyFind() {
+		Student student1 = studentRepository.findById(1L).orElseThrow(() -> new RuntimeException("Student not found"));
+		Student student2 = studentRepository.findById(2L).orElseThrow(() -> new RuntimeException("Student not found"));
+
+		Course course1 = courseRepository.findById(1L).orElseThrow(() -> new RuntimeException("Course not found"));
+		Course course2 = courseRepository.findById(2L).orElseThrow(() -> new RuntimeException("Course not found"));
+
+		student1.setCourses(Set.of(course1, course2));
+		student2.setCourses(Set.of(course2));
+
+		studentRepository.saveAll(Set.of(student1, student2));
+
+		System.out.println(student1);
+		System.out.println(student2);
+	}
+
+	public void manyToMany() {
+		Student student1 = new Student("Jano", "Pura");
+		Student student2 = new Student("Erba", "Doe");
+
+		Course course1 = new Course("Java Programming", "Andres");
+		Course course2 = new Course("Spring Boot", "Luis");
+
+		student1.setCourses(Set.of(course1, course2));
+		student2.setCourses(Set.of(course2));
+
+		studentRepository.saveAll(Set.of(student1, student2));
+
+		System.out.println(student1);
+		System.out.println(student2);
+	}
+
 	public void oneToOneBidirectionalFindById() {
 		Optional<Client> optionalClient = clientRepository.findOne(2L);
 		optionalClient.ifPresent(c -> {
